@@ -20,24 +20,24 @@ export async function fetchSubscriptions(): Promise<number> {
     }
 
     const data = await response.json();
-    
+
     // Handle different response formats
     // API can return: "2631" (JSON string), 2631 (number), or {"count": 2631} (object)
     if (typeof data === "number") {
       return data;
     }
-    
+
     if (typeof data === "string") {
       // Handle string numbers like "2631"
       const parsed = parseInt(data, 10);
       return isNaN(parsed) ? 0 : parsed;
     }
-    
+
     if (typeof data === "object" && data !== null) {
       // Try common property names
       return data.count || data.subscriptions || data.value || data.total || 0;
     }
-    
+
     return 0;
   } catch (error) {
     console.error("Error fetching subscriptions:", error);
@@ -118,7 +118,7 @@ export async function fetchWaitlistFilled(): Promise<number> {
 
 /**
  * Fetches PlayStore downloads from data/downloads.json
- * This file is updated every 4 hours by the cron job
+ * This file is updated daily by the cron job
  */
 export async function fetchPlayStoreDownloads(): Promise<number> {
   try {
@@ -170,12 +170,15 @@ export async function fetchAppStoreDownloads(): Promise<number> {
  */
 export async function fetchSpinWheelCount(): Promise<number> {
   try {
-    const response = await fetch("https://gen4-launch.vercel.app/api/leads/count", {
-      cache: "no-store",
-      headers: {
-        Accept: "application/json",
+    const response = await fetch(
+      "https://gen4-launch.vercel.app/api/leads/count",
+      {
+        cache: "no-store",
+        headers: {
+          Accept: "application/json",
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       throw new Error(`Spin Wheel API error: ${response.status}`);

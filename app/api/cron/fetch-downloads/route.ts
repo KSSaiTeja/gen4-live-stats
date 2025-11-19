@@ -5,7 +5,8 @@ import path from 'path';
 
 /**
  * Cron endpoint to fetch PlayStore downloads via scraper
- * Runs every 4 hours via Vercel Cron Jobs (configured in vercel.json)
+ * Runs daily at midnight (00:00 UTC) via Vercel Cron Jobs
+ * Free plan supports daily cron jobs only
  */
 export async function GET(request: Request) {
   try {

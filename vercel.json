@@ -2,8 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/fetch-downloads",
-      "schedule": "0 */4 * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }
-
