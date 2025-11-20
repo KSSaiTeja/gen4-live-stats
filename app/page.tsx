@@ -71,8 +71,8 @@ export default function Dashboard() {
   const [currentTime, setCurrentTime] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  // Fetch stats from APIs
-  const fetchStats = async () => {
+  // Fetch all stats (used for initial load)
+  const fetchAllStats = async () => {
     try {
       // Fetch all stats in parallel
       const [
@@ -119,14 +119,68 @@ export default function Dashboard() {
     }
   };
 
+  // Fetch subscriptions, PlayStore, and AppStore downloads (every 30 seconds)
+  const fetchStaticStats = async () => {
+    try {
+      const [subscriptionsCount, playstoreDownloads, appstoreDownloads] =
+        await Promise.all([
+          fetchSubscriptions(),
+          fetchPlayStoreDownloads(),
+          fetchAppStoreDownloads(),
+        ]);
+
+      setStats((prev) => ({
+        ...prev,
+        playstoreDownloads: {
+          current: playstoreDownloads,
+          previous: prev.playstoreDownloads.current,
+        },
+        appstoreDownloads: {
+          current: appstoreDownloads,
+          previous: prev.appstoreDownloads.current,
+        },
+        subscriptions: {
+          current: subscriptionsCount,
+          previous: prev.subscriptions.current,
+        },
+      }));
+    } catch (error) {
+      console.error("Error fetching static stats:", error);
+    }
+  };
+
+  // Fetch waitlist and spin wheel (every 1 minute - dynamic data)
+  const fetchDynamicStats = async () => {
+    try {
+      const [waitlistFilled, spinWheelCount] = await Promise.all([
+        fetchWaitlistFilled(),
+        fetchSpinWheelCount(),
+      ]);
+
+      setStats((prev) => ({
+        ...prev,
+        waitlist: {
+          current: waitlistFilled,
+          previous: prev.waitlist.current,
+        },
+        spinWheel: {
+          current: spinWheelCount,
+          previous: prev.spinWheel.current,
+        },
+      }));
+    } catch (error) {
+      console.error("Error fetching dynamic stats:", error);
+    }
+  };
+
   useEffect(() => {
     // Mark as mounted to prevent hydration mismatch (client-side only)
     setMounted(true);
     setCurrentTime(new Date().toLocaleTimeString());
 
-    // Fetch initial data after mount completes
+    // Fetch initial data after mount completes (all stats at once)
     const initialFetch = setTimeout(() => {
-      fetchStats();
+      fetchAllStats();
     }, 0);
 
     // Update time every second
@@ -134,15 +188,21 @@ export default function Dashboard() {
       setCurrentTime(new Date().toLocaleTimeString());
     }, 1000);
 
-    // Fetch stats every 30 seconds (30000ms)
-    const statsInterval = setInterval(() => {
-      fetchStats();
-    }, 30000);
+    // Fetch subscriptions, PlayStore, and AppStore downloads every 30 seconds
+    const staticStatsInterval = setInterval(() => {
+      fetchStaticStats();
+    }, 30000); // 30 seconds
+
+    // Fetch waitlist and spin wheel every 1 minute (dynamic data)
+    const dynamicStatsInterval = setInterval(() => {
+      fetchDynamicStats();
+    }, 60000); // 60 seconds (1 minute)
 
     return () => {
       clearTimeout(initialFetch);
       clearInterval(timeInterval);
-      clearInterval(statsInterval);
+      clearInterval(staticStatsInterval);
+      clearInterval(dynamicStatsInterval);
     };
   }, []);
 
