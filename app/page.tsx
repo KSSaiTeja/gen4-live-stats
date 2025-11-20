@@ -119,15 +119,22 @@ export default function Dashboard() {
     }
   };
 
-  // Fetch subscriptions, PlayStore, and AppStore downloads (every 30 seconds)
-  const fetchStaticStats = async () => {
+  // Fetch all stats every 30 seconds (subscriptions, PlayStore, AppStore, waitlist, spin wheel)
+  const fetchAllStatsPeriodic = async () => {
     try {
-      const [subscriptionsCount, playstoreDownloads, appstoreDownloads] =
-        await Promise.all([
-          fetchSubscriptions(),
-          fetchPlayStoreDownloads(),
-          fetchAppStoreDownloads(),
-        ]);
+      const [
+        subscriptionsCount,
+        waitlistFilled,
+        playstoreDownloads,
+        appstoreDownloads,
+        spinWheelCount,
+      ] = await Promise.all([
+        fetchSubscriptions(),
+        fetchWaitlistFilled(),
+        fetchPlayStoreDownloads(),
+        fetchAppStoreDownloads(),
+        fetchSpinWheelCount(),
+      ]);
 
       setStats((prev) => ({
         ...prev,
@@ -143,22 +150,6 @@ export default function Dashboard() {
           current: subscriptionsCount,
           previous: prev.subscriptions.current,
         },
-      }));
-    } catch (error) {
-      console.error("Error fetching static stats:", error);
-    }
-  };
-
-  // Fetch waitlist and spin wheel (every 1 minute - dynamic data)
-  const fetchDynamicStats = async () => {
-    try {
-      const [waitlistFilled, spinWheelCount] = await Promise.all([
-        fetchWaitlistFilled(),
-        fetchSpinWheelCount(),
-      ]);
-
-      setStats((prev) => ({
-        ...prev,
         waitlist: {
           current: waitlistFilled,
           previous: prev.waitlist.current,
@@ -169,7 +160,7 @@ export default function Dashboard() {
         },
       }));
     } catch (error) {
-      console.error("Error fetching dynamic stats:", error);
+      console.error("Error fetching stats:", error);
     }
   };
 
@@ -188,21 +179,15 @@ export default function Dashboard() {
       setCurrentTime(new Date().toLocaleTimeString());
     }, 1000);
 
-    // Fetch subscriptions, PlayStore, and AppStore downloads every 30 seconds
-    const staticStatsInterval = setInterval(() => {
-      fetchStaticStats();
+    // Fetch all stats every 30 seconds (including spin wheel and waitlist)
+    const statsInterval = setInterval(() => {
+      fetchAllStatsPeriodic();
     }, 30000); // 30 seconds
-
-    // Fetch waitlist and spin wheel every 1 minute (dynamic data)
-    const dynamicStatsInterval = setInterval(() => {
-      fetchDynamicStats();
-    }, 60000); // 60 seconds (1 minute)
 
     return () => {
       clearTimeout(initialFetch);
       clearInterval(timeInterval);
-      clearInterval(staticStatsInterval);
-      clearInterval(dynamicStatsInterval);
+      clearInterval(statsInterval);
     };
   }, []);
 
