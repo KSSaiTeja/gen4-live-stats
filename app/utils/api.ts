@@ -9,8 +9,11 @@
 export async function fetchSubscriptions(): Promise<number> {
   try {
     const response = await fetch("https://savart.com/workflow/secret_api", {
+      cache: "no-store",
       headers: {
         Accept: "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
       },
     });
 
@@ -52,8 +55,11 @@ export async function fetchSubscriptions(): Promise<number> {
 export async function fetchWaitlistFilled(): Promise<number> {
   try {
     const response = await fetch("https://savart.com/excel/p4_waitlist_count", {
+      cache: "no-store",
       headers: {
         Accept: "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
       },
     });
 
@@ -124,6 +130,8 @@ export async function fetchPlayStoreDownloads(): Promise<number> {
       cache: "no-store",
       headers: {
         Accept: "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
       },
     });
 
@@ -146,6 +154,8 @@ export async function fetchAppStoreDownloads(): Promise<number> {
       cache: "no-store",
       headers: {
         Accept: "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
       },
     });
 
@@ -171,8 +181,11 @@ export async function fetchSpinWheelCount(): Promise<number> {
     const response = await fetch(
       "https://gen4-launch.vercel.app/api/leads/count",
       {
+        cache: "no-store",
         headers: {
           Accept: "application/json",
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
         },
       },
     );

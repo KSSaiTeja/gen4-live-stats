@@ -11,21 +11,39 @@ export async function GET() {
     const filePath = path.join(process.cwd(), "data", "downloads.json");
 
     if (!fs.existsSync(filePath)) {
-      return NextResponse.json({
-        playstore: 0,
-        appstore: 0,
-        lastUpdated: new Date().toISOString(),
-      });
+      return NextResponse.json(
+        {
+          playstore: 0,
+          appstore: 0,
+          lastUpdated: new Date().toISOString(),
+        },
+        {
+          headers: {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+            Expires: "0",
+          },
+        },
+      );
     }
 
     const fileContents = fs.readFileSync(filePath, "utf8");
     const data = JSON.parse(fileContents);
 
-    return NextResponse.json({
-      playstore: data.playstore || 0,
-      appstore: data.appstore || 0,
-      lastUpdated: data.lastUpdated || new Date().toISOString(),
-    });
+    return NextResponse.json(
+      {
+        playstore: data.playstore || 0,
+        appstore: data.appstore || 0,
+        lastUpdated: data.lastUpdated || new Date().toISOString(),
+      },
+      {
+        headers: {
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      },
+    );
   } catch (error) {
     console.error("Error reading downloads file:", error);
 
