@@ -8,14 +8,17 @@
  */
 export async function fetchSubscriptions(): Promise<number> {
   try {
-    const response = await fetch("https://savart.com/workflow/secret_api", {
-      cache: "no-store",
-      headers: {
-        Accept: "application/json",
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-        Pragma: "no-cache",
+    // Use timestamp to bust cache and ensure fresh data
+    const timestamp = Date.now();
+    const response = await fetch(
+      `https://savart.com/workflow/secret_api?_=${timestamp}`,
+      {
+        cache: "no-store",
+        headers: {
+          Accept: "application/json",
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       throw new Error(`Subscriptions API error: ${response.status}`);
@@ -54,14 +57,17 @@ export async function fetchSubscriptions(): Promise<number> {
  */
 export async function fetchWaitlistFilled(): Promise<number> {
   try {
-    const response = await fetch("https://savart.com/excel/p4_waitlist_count", {
-      cache: "no-store",
-      headers: {
-        Accept: "application/json",
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-        Pragma: "no-cache",
+    // Use timestamp to bust cache and ensure fresh data
+    const timestamp = Date.now();
+    const response = await fetch(
+      `https://savart.com/excel/p4_waitlist_count?_=${timestamp}`,
+      {
+        cache: "no-store",
+        headers: {
+          Accept: "application/json",
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       throw new Error(`Waitlist API error: ${response.status}`);
@@ -126,12 +132,12 @@ export async function fetchWaitlistFilled(): Promise<number> {
  */
 export async function fetchPlayStoreDownloads(): Promise<number> {
   try {
-    const response = await fetch("/api/downloads", {
+    // Use timestamp to bust cache and ensure fresh data
+    const timestamp = Date.now();
+    const response = await fetch(`/api/downloads?_=${timestamp}`, {
       cache: "no-store",
       headers: {
         Accept: "application/json",
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-        Pragma: "no-cache",
       },
     });
 
@@ -149,13 +155,12 @@ export async function fetchPlayStoreDownloads(): Promise<number> {
 
 export async function fetchAppStoreDownloads(): Promise<number> {
   try {
-    // Call the Next.js API route (no external backend needed!)
-    const response = await fetch("/api/downloads", {
+    // Use timestamp to bust cache and ensure fresh data
+    const timestamp = Date.now();
+    const response = await fetch(`/api/downloads?_=${timestamp}`, {
       cache: "no-store",
       headers: {
         Accept: "application/json",
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-        Pragma: "no-cache",
       },
     });
 
@@ -178,14 +183,14 @@ export async function fetchAppStoreDownloads(): Promise<number> {
  */
 export async function fetchSpinWheelCount(): Promise<number> {
   try {
+    // Use timestamp to bust cache and ensure fresh data
+    const timestamp = Date.now();
     const response = await fetch(
-      "https://gen4-launch.vercel.app/api/leads/count",
+      `https://gen4-launch.vercel.app/api/leads/count?_=${timestamp}`,
       {
         cache: "no-store",
         headers: {
           Accept: "application/json",
-          "Cache-Control": "no-cache, no-store, must-revalidate",
-          Pragma: "no-cache",
         },
       },
     );
