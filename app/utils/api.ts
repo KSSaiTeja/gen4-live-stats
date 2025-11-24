@@ -178,22 +178,20 @@ export async function fetchAppStoreDownloads(): Promise<number> {
 
 /**
  * Fetch spin wheel count (leads count)
- * API: https://gen4-launch.vercel.app/api/leads/count
+ * Uses local API proxy to avoid CORS issues
+ * API: /api/spinwheel
  * Response: {"count": 62}
  */
 export async function fetchSpinWheelCount(): Promise<number> {
   try {
     // Use timestamp to bust cache and ensure fresh data
     const timestamp = Date.now();
-    const response = await fetch(
-      `https://gen4-launch.vercel.app/api/leads/count?_=${timestamp}`,
-      {
-        cache: "no-store",
-        headers: {
-          Accept: "application/json",
-        },
+    const response = await fetch(`/api/spinwheel?_=${timestamp}`, {
+      cache: "no-store",
+      headers: {
+        Accept: "application/json",
       },
-    );
+    });
 
     if (!response.ok) {
       throw new Error(`Spin Wheel API error: ${response.status}`);
@@ -202,7 +200,7 @@ export async function fetchSpinWheelCount(): Promise<number> {
     const data = await response.json();
 
     // Handle different response formats
-    // API can return: {"count": 62} (object), 62 (number), or "62" (string)
+    // API returns: {"count": 62}
     if (typeof data === "number") {
       return data;
     }
@@ -218,7 +216,7 @@ export async function fetchSpinWheelCount(): Promise<number> {
     }
 
     if (typeof data === "object" && data !== null) {
-      // API returns: {"count": 62, "fetchedAt": "..."}
+      // API returns: {"count": 62}
       const count = data.count || data.leads || data.value || data.total;
       if (count !== undefined && count !== null) {
         // Ensure it's a number
