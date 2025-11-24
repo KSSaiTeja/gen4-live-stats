@@ -200,14 +200,37 @@ export async function fetchSpinWheelCount(): Promise<number> {
     }
 
     const data = await response.json();
+
     // Handle different response formats
+    // API can return: {"count": 62} (object), 62 (number), or "62" (string)
     if (typeof data === "number") {
       return data;
     }
-    if (typeof data === "object" && data !== null) {
-      // API returns: {"count": 62}
-      return data.count || data.leads || data.value || data.total || 0;
+
+    if (typeof data === "string") {
+      // Handle string numbers like "62"
+      const parsed = parseInt(data, 10);
+      if (isNaN(parsed)) {
+        console.warn("Spin Wheel: Invalid string response:", data);
+        return 0;
+      }
+      return parsed;
     }
+
+    if (typeof data === "object" && data !== null) {
+      // API returns: {"count": 62, "fetchedAt": "..."}
+      const count = data.count || data.leads || data.value || data.total;
+      if (count !== undefined && count !== null) {
+        // Ensure it's a number
+        const numCount =
+          typeof count === "number" ? count : parseInt(String(count), 10);
+        return isNaN(numCount) ? 0 : numCount;
+      }
+      console.warn("Spin Wheel: No count found in response:", data);
+      return 0;
+    }
+
+    console.warn("Spin Wheel: Unexpected response format:", typeof data, data);
     return 0;
   } catch (error) {
     console.error("Error fetching spin wheel count:", error);
