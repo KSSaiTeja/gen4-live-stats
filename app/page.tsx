@@ -10,6 +10,7 @@ import {
   fetchAppStoreDownloads,
   fetchSpinWheelCount,
 } from "./utils/api";
+import { getTodaySubscriptionCount } from "./utils/subscriptionDailyCounter";
 
 // Icons using Unicode symbols (you can replace with SVG icons later)
 const PlayStoreIcon = () => (
@@ -89,6 +90,8 @@ export default function Dashboard() {
         fetchSpinWheelCount(),
       ]);
 
+      const todaySubscriptions = getTodaySubscriptionCount(subscriptionsCount);
+
       // Update stats with new values, preserving previous for comparison
       setStats((prev) => ({
         ...prev,
@@ -101,7 +104,7 @@ export default function Dashboard() {
           previous: prev.appstoreDownloads.current,
         },
         subscriptions: {
-          current: subscriptionsCount,
+          current: todaySubscriptions,
           previous: prev.subscriptions.current,
         },
         waitlist: {
@@ -136,6 +139,8 @@ export default function Dashboard() {
         fetchSpinWheelCount(),
       ]);
 
+      const todaySubscriptions = getTodaySubscriptionCount(subscriptionsCount);
+
       setStats((prev) => ({
         ...prev,
         playstoreDownloads: {
@@ -147,7 +152,7 @@ export default function Dashboard() {
           previous: prev.appstoreDownloads.current,
         },
         subscriptions: {
-          current: subscriptionsCount,
+          current: todaySubscriptions,
           previous: prev.subscriptions.current,
         },
         waitlist: {

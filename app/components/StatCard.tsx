@@ -39,7 +39,6 @@ interface StatCardProps {
 export default function StatCard({
   title,
   value,
-  previousValue,
   icon,
   delay = 0,
 }: StatCardProps) {
@@ -49,7 +48,7 @@ export default function StatCard({
     <Card
       className={cn(
         // Base card styles with proper padding control
-        "group relative rounded-2xl bg-gradient-to-br from-gray-900 via-gray-950 to-black",
+        "group relative rounded-2xl bg-linear-to-br from-gray-900 via-gray-950 to-black",
         "border border-gray-800/50",
         "flex flex-col",
         "transition-all duration-300 ease-out",
@@ -58,7 +57,7 @@ export default function StatCard({
         "cursor-default overflow-visible",
         "min-h-[240px] h-full",
         // CRITICAL: Override ALL default Card padding (shadcn has py-6, gap-6 by default)
-        "!p-0 !py-0 !gap-0",
+        "p-0! py-0! gap-0!",
         // Doherty Threshold: Instant visual feedback
       )}
       style={{
@@ -68,7 +67,7 @@ export default function StatCard({
       }}
     >
       {/* Animated background gradient on hover - Law of Continuity */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#76c6ff]/0 via-[#76c6ff]/0 to-[#76c6ff]/0 group-hover:from-[#76c6ff]/5 group-hover:via-[#76c6ff]/3 group-hover:to-transparent transition-all duration-500 pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-br from-[#76c6ff]/0 via-[#76c6ff]/0 to-[#76c6ff]/0 group-hover:from-[#76c6ff]/5 group-hover:via-[#76c6ff]/3 group-hover:to-transparent transition-all duration-500 pointer-events-none" />
 
       {/* Subtle corner accent - Von Restorff Effect */}
       <div className="absolute top-0 right-0 w-40 h-40 bg-[#76c6ff]/5 rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
