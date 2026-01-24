@@ -1,15 +1,11 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
 
 interface UpdateStatsRequest {
-  // playstore: number;
-  // appstore: number;
   revenue: number;
 }
 
 /**
- * Update statistics in data/downloads.json
+ * Update statistics using JSONBin (external storage)
  */
 export async function POST(request: Request) {
   try {
@@ -17,7 +13,6 @@ export async function POST(request: Request) {
     
     // Validate the data
     const { revenue } = body;
-    // const { playstore, appstore, revenue } = body;
     
     if (typeof revenue !== "number") {
       return NextResponse.json(
@@ -33,26 +28,57 @@ export async function POST(request: Request) {
       );
     }
 
-    const filePath = path.join(process.cwd(), "data", "downloads.json");
+    // Use JSONBin to store data (free external storage)
+    const jsonBinUrl = process.env.JSONBIN_URL || 'https://api.jsonbin.io/v3/b/YOUR_BIN_ID';
+    const jsonBinKey = process.env.JSONBIN_API_KEY;
 
-    // Read existing data
-    let existingData: any = {};
-    if (fs.existsSync(filePath)) {
-      const existingContent = fs.readFileSync(filePath, "utf8");
-      existingData = JSON.parse(existingContent);
+    if (!jsonBinKey) {
+      // Fallback: Return success but warn about configuration
+      console.warn('JSONBin not configured. Data not persisted.');
+      
+      return NextResponse.json({
+        success: true,
+        message: "Statistics updated (not persisted - configure JSONBin)",
+        data: { revenue, lastUpdated: new Date().toISOString() },
+      });
     }
 
-    // Update with new values (keep existing playstore/appstore if present)
+    // Get existing data
+    let existingData: any = {};
+    try {
+      const getResponse = await fetch(jsonBinUrl, {
+        headers: {
+          'X-Master-Key': jsonBinKey,
+        },
+      });
+      if (getResponse.ok) {
+        const result = await getResponse.json();
+        existingData = result.record || {};
+      }
+    } catch (error) {
+      console.log('No existing data found, creating new...');
+    }
+
+    // Update with new values
     const updatedData = {
       ...existingData,
-      // playstore,
-      // appstore,
       revenue,
       lastUpdated: new Date().toISOString(),
     };
 
-    // Write back to file
-    fs.writeFileSync(filePath, JSON.stringify(updatedData, null, 2));
+    // Save to JSONBin
+    const updateResponse = await fetch(jsonBinUrl, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': jsonBinKey,
+      },
+      body: JSON.stringify(updatedData),
+    });
+
+    if (!updateResponse.ok) {
+      throw new Error('Failed to update external storage');
+    }
 
     return NextResponse.json(
       {
