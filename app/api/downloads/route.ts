@@ -15,6 +15,7 @@ export async function GET() {
         {
           playstore: 0,
           appstore: 0,
+          revenue: 0,
           lastUpdated: new Date().toISOString(),
         },
         {
@@ -34,6 +35,7 @@ export async function GET() {
       {
         playstore: data.playstore || 0,
         appstore: data.appstore || 0,
+        revenue: data.revenue || 0,
         lastUpdated: data.lastUpdated || new Date().toISOString(),
       },
       {
@@ -50,6 +52,7 @@ export async function GET() {
     return NextResponse.json({
       playstore: 0,
       appstore: 0,
+      revenue: 0,
       lastUpdated: new Date().toISOString(),
     });
   }

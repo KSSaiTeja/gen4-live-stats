@@ -10,6 +10,8 @@ interface StatCardProps {
   previousValue?: number;
   icon?: React.ReactNode;
   delay?: number;
+  showFullNumber?: boolean;
+  showPrevious?: boolean;
 }
 
 /**
@@ -39,10 +41,14 @@ interface StatCardProps {
 export default function StatCard({
   title,
   value,
+  previousValue,
   icon,
   delay = 0,
+  showFullNumber = false,
+  showPrevious = false,
 }: StatCardProps) {
-  const formattedValue = formatNumber(value);
+  const formattedValue = showFullNumber ? value.toLocaleString() : formatNumber(value);
+  const formattedPreviousValue = previousValue && showFullNumber ? previousValue.toLocaleString() : (previousValue ? formatNumber(previousValue) : null);
 
   return (
     <Card
@@ -102,6 +108,12 @@ export default function StatCard({
             <span className="block text-2xl md:text-3xl lg:text-4xl font-black tabular-nums leading-tight text-white whitespace-nowrap overflow-visible">
               {formattedValue}
             </span>
+            {/* Previous Value - Only show for PlayStore and AppStore */}
+            {previousValue && showPrevious && (
+              <span className="block text-sm text-gray-400 mt-6 font-medium">
+                Previous: {formattedPreviousValue}
+              </span>
+            )}
           </div>
         </CardContent>
       </div>

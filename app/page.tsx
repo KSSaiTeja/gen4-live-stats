@@ -3,12 +3,13 @@
 import StatCard from "./components/StatCard";
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { IndianRupee } from "lucide-react";
 import {
   fetchSubscriptions,
   fetchWaitlistFilled,
   fetchPlayStoreDownloads,
   fetchAppStoreDownloads,
-  fetchSpinWheelCount,
+  fetchRevenue,
 } from "./utils/api";
 import { getTodaySubscriptionCount } from "./utils/subscriptionDailyCounter";
 
@@ -31,17 +32,7 @@ const SubscriptionIcon = () => (
   </svg>
 );
 
-const WaitlistIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M13,7H11V11H7V13H11V17H13V13H17V11H13V7Z" />
-  </svg>
-);
-
-const SpinWheelIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8M10,10V14H14V10H10Z" />
-  </svg>
-);
+const RevenueIcon = () => <IndianRupee size={24} />;
 
 /**
  * Main Dashboard Page
@@ -61,11 +52,10 @@ const SpinWheelIcon = () => (
 export default function Dashboard() {
   // Stats state with current and previous values for comparison
   const [stats, setStats] = useState({
-    playstoreDownloads: { current: 12500, previous: 12500 },
+    playstoreDownloads: { current: 100000, previous: 100000 },
     appstoreDownloads: { current: 8900, previous: 8900 },
     subscriptions: { current: 3400, previous: 3400 },
-    waitlist: { current: 567, previous: 567 },
-    spinWheel: { current: 64, previous: 64 },
+    revenue: { current: 45000, previous: 45000 },
   });
 
   // Fix hydration: start with null, set in useEffect (client-side only)
@@ -78,16 +68,14 @@ export default function Dashboard() {
       // Fetch all stats in parallel
       const [
         subscriptionsCount,
-        waitlistFilled,
         playstoreDownloads,
         appstoreDownloads,
-        spinWheelCount,
+        revenue,
       ] = await Promise.all([
         fetchSubscriptions(),
-        fetchWaitlistFilled(),
         fetchPlayStoreDownloads(),
         fetchAppStoreDownloads(),
-        fetchSpinWheelCount(),
+        fetchRevenue(),
       ]);
 
       const todaySubscriptions = getTodaySubscriptionCount(subscriptionsCount);
@@ -107,13 +95,9 @@ export default function Dashboard() {
           current: todaySubscriptions,
           previous: prev.subscriptions.current,
         },
-        waitlist: {
-          current: waitlistFilled,
-          previous: prev.waitlist.current,
-        },
-        spinWheel: {
-          current: spinWheelCount,
-          previous: prev.spinWheel.current,
+        revenue: {
+          current: revenue,
+          previous: prev.revenue.current,
         },
       }));
     } catch (error) {
@@ -122,21 +106,19 @@ export default function Dashboard() {
     }
   };
 
-  // Fetch all stats every 30 seconds (subscriptions, PlayStore, AppStore, waitlist, spin wheel)
+  // Fetch all stats every 30 seconds (subscriptions, PlayStore, AppStore, revenue)
   const fetchAllStatsPeriodic = async () => {
     try {
       const [
         subscriptionsCount,
-        waitlistFilled,
         playstoreDownloads,
         appstoreDownloads,
-        spinWheelCount,
+        revenue,
       ] = await Promise.all([
         fetchSubscriptions(),
-        fetchWaitlistFilled(),
         fetchPlayStoreDownloads(),
         fetchAppStoreDownloads(),
-        fetchSpinWheelCount(),
+        fetchRevenue(),
       ]);
 
       const todaySubscriptions = getTodaySubscriptionCount(subscriptionsCount);
@@ -155,13 +137,9 @@ export default function Dashboard() {
           current: todaySubscriptions,
           previous: prev.subscriptions.current,
         },
-        waitlist: {
-          current: waitlistFilled,
-          previous: prev.waitlist.current,
-        },
-        spinWheel: {
-          current: spinWheelCount,
-          previous: prev.spinWheel.current,
+        revenue: {
+          current: revenue,
+          previous: prev.revenue.current,
         },
       }));
     } catch (error) {
@@ -198,6 +176,17 @@ export default function Dashboard() {
 
   return (
     <div className="h-screen w-full bg-black text-white flex flex-col overflow-hidden">
+      {/* Banner Image - At the very top */}
+      <div className="w-full flex justify-center pt-4 pb-2">
+        <Image
+          src="/banner-image.svg"
+          alt="Banner"
+          width={1200}
+          height={200}
+          priority
+          className="w-full max-w-7xl h-auto object-contain"
+        />
+      </div>
       {/* Main Content - Proper grid layout with vertical centering */}
       <main className="flex-1 flex flex-col items-center justify-center p-8 md:p-12">
         <div className="max-w-7xl mx-auto w-full px-4 flex flex-col items-center">
@@ -239,53 +228,54 @@ export default function Dashboard() {
               Gen4 Live Stats
             </h1>
           </div>
-          {/* Stats Grid - Proper dimensions with equal height cards - Law of Proximity & Common Region */}
-          {/* Grid gap provides spacing between cards, container px-4 ensures edge spacing */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8 md:gap-10 lg:gap-12 w-full">
-            {/* PlayStore Downloads - Serial Position: First */}
-            <StatCard
-              title="PlayStore Downloads"
-              value={stats.playstoreDownloads.current}
-              previousValue={stats.playstoreDownloads.previous}
-              icon={<PlayStoreIcon />}
-              delay={0}
-            />
+          {/* Stats Grid - 2 big cards side by side */}
+          <div className="w-full">
+            {/* Two big cards side by side */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10 lg:gap-12">
+              {/* Revenue - First */}
+              <StatCard
+                title="Revenue (INR)"
+                value={stats.revenue.current}
+                previousValue={stats.revenue.previous}
+                icon={<RevenueIcon />}
+                delay={0}
+                showFullNumber={true}
+              />
 
-            {/* AppStore Downloads - Serial Position: Second */}
-            <StatCard
-              title="AppStore Downloads"
-              value={stats.appstoreDownloads.current}
-              previousValue={stats.appstoreDownloads.previous}
-              icon={<AppStoreIcon />}
-              delay={100}
-            />
+              {/* Subscriptions - Second */}
+              <StatCard
+                title="Subscriptions"
+                value={stats.subscriptions.current}
+                previousValue={stats.subscriptions.previous}
+                icon={<SubscriptionIcon />}
+                delay={100}
+              />
+            </div>
 
-            {/* Subscriptions */}
-            <StatCard
-              title="Subscriptions"
-              value={stats.subscriptions.current}
-              previousValue={stats.subscriptions.previous}
-              icon={<SubscriptionIcon />}
-              delay={200}
-            />
+            {/* COMMENTED OUT - PlayStore and AppStore Downloads */}
+            {/*
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 lg:gap-12">
+              <StatCard
+                title="PlayStore Downloads"
+                value={stats.playstoreDownloads.current}
+                previousValue={100000}
+                icon={<PlayStoreIcon />}
+                delay={0}
+                showFullNumber={true}
+                showPrevious={true}
+              />
 
-            {/* Waitlist */}
-            <StatCard
-              title="Waitlist"
-              value={stats.waitlist.current}
-              previousValue={stats.waitlist.previous}
-              icon={<WaitlistIcon />}
-              delay={300}
-            />
-
-            {/* Spin Wheel - Serial Position: Last (most memorable) */}
-            <StatCard
-              title="Spin Wheel"
-              value={stats.spinWheel.current}
-              previousValue={stats.spinWheel.previous}
-              icon={<SpinWheelIcon />}
-              delay={400}
-            />
+              <StatCard
+                title="AppStore Downloads"
+                value={stats.appstoreDownloads.current}
+                previousValue={8900}
+                icon={<AppStoreIcon />}
+                delay={100}
+                showFullNumber={true}
+                showPrevious={true}
+              />
+            </div>
+            */}
           </div>
         </div>
       </main>

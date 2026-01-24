@@ -2,53 +2,6 @@
  * API utility functions for fetching live stats
  */
 
-/**
- * Fetch current subscriptions count
- * API returns: "2631" (JSON string)
- */
-export async function fetchSubscriptions(): Promise<number> {
-  try {
-    // Use timestamp to bust cache and ensure fresh data
-    const timestamp = Date.now();
-    const response = await fetch(
-      `https://savart.com/workflow/secret_api?_=${timestamp}`,
-      {
-        cache: "no-store",
-        headers: {
-          Accept: "application/json",
-        },
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error(`Subscriptions API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    // Handle different response formats
-    // API can return: "2631" (JSON string), 2631 (number), or {"count": 2631} (object)
-    if (typeof data === "number") {
-      return data;
-    }
-
-    if (typeof data === "string") {
-      // Handle string numbers like "2631"
-      const parsed = parseInt(data, 10);
-      return isNaN(parsed) ? 0 : parsed;
-    }
-
-    if (typeof data === "object" && data !== null) {
-      // Try common property names
-      return data.count || data.subscriptions || data.value || data.total || 0;
-    }
-
-    return 0;
-  } catch (error) {
-    console.error("Error fetching subscriptions:", error);
-    return 0; // Return 0 on error (graceful fallback)
-  }
-}
 
 /**
  * Fetch waitlist count
@@ -100,16 +53,16 @@ export async function fetchWaitlistFilled(): Promise<number> {
           data.remaining_count !== undefined
             ? data.remaining_count
             : data.remaining !== undefined
-            ? data.remaining
-            : data.count !== undefined
-            ? data.count
-            : data.waitlist !== undefined
-            ? data.waitlist
-            : data.value !== undefined
-            ? data.value
-            : data.total !== undefined
-            ? data.total
-            : 0;
+              ? data.remaining
+              : data.count !== undefined
+                ? data.count
+                : data.waitlist !== undefined
+                  ? data.waitlist
+                  : data.value !== undefined
+                    ? data.value
+                    : data.total !== undefined
+                      ? data.total
+                      : 0;
       }
     }
 
@@ -172,6 +125,80 @@ export async function fetchAppStoreDownloads(): Promise<number> {
     return data.appstore || 0;
   } catch (error) {
     console.error("Error fetching AppStore downloads:", error);
+    return 0; // Return 0 on error (graceful fallback)
+  }
+}
+
+/**
+ * Fetch current subscriptions count from external API
+ * API returns: "2631" (JSON string)
+ */
+export async function fetchSubscriptions(): Promise<number> {
+  try {
+    // Use timestamp to bust cache and ensure fresh data
+    const timestamp = Date.now();
+    const response = await fetch(
+      `https://savart.com/workflow/secret_api?_=${timestamp}`,
+      {
+        cache: "no-store",
+        headers: {
+          Accept: "application/json",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Subscriptions API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    // Handle different response formats
+    // API can return: "2631" (JSON string), 2631 (number), or {"count": 2631} (object)
+    if (typeof data === "number") {
+      return data;
+    }
+
+    if (typeof data === "string") {
+      // Handle string numbers like "2631"
+      const parsed = parseInt(data, 10);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+
+    if (typeof data === "object" && data !== null) {
+      // Try common property names
+      return data.count || data.subscriptions || data.value || data.total || 0;
+    }
+
+    return 0;
+  } catch (error) {
+    console.error("Error fetching subscriptions:", error);
+    return 0; // Return 0 on error (graceful fallback)
+  }
+}
+
+/**
+ * Fetch revenue from local data
+ */
+export async function fetchRevenue(): Promise<number> {
+  try {
+    // Use timestamp to bust cache and ensure fresh data
+    const timestamp = Date.now();
+    const response = await fetch(`/api/downloads?_=${timestamp}`, {
+      cache: "no-store",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Revenue API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.revenue || 0;
+  } catch (error) {
+    console.error("Error fetching revenue:", error);
     return 0; // Return 0 on error (graceful fallback)
   }
 }
