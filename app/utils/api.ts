@@ -178,7 +178,7 @@ export async function fetchSubscriptions(): Promise<number> {
 }
 
 /**
- * Fetch revenue from local data
+ * Fetch revenue from local data (JSONBin via /api/downloads)
  */
 export async function fetchRevenue(): Promise<number> {
   try {
@@ -200,6 +200,32 @@ export async function fetchRevenue(): Promise<number> {
   } catch (error) {
     console.error("Error fetching revenue:", error);
     return 0; // Return 0 on error (graceful fallback)
+  }
+}
+
+/**
+ * Fetch number of users this month from local data (JSONBin via /api/downloads).
+ * Same source as revenue — editable on admin page.
+ */
+export async function fetchUsersThisMonth(): Promise<number> {
+  try {
+    const timestamp = Date.now();
+    const response = await fetch(`/api/downloads?_=${timestamp}`, {
+      cache: "no-store",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Users this month API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.usersThisMonth ?? 0;
+  } catch (error) {
+    console.error("Error fetching users this month:", error);
+    return 0;
   }
 }
 

@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
+import { writeStatsToFile } from "@/app/lib/statsFile";
 
 interface UpdateStatsRequest {
   revenue: number;
+  usersThisMonth?: number;
 }
 
 /**
@@ -12,7 +14,7 @@ export async function POST(request: Request) {
     const body: UpdateStatsRequest = await request.json();
     
     // Validate the data
-    const { revenue } = body;
+    const { revenue, usersThisMonth } = body;
     
     if (typeof revenue !== "number") {
       return NextResponse.json(
@@ -28,18 +30,43 @@ export async function POST(request: Request) {
       );
     }
 
+    if (usersThisMonth !== undefined) {
+      if (typeof usersThisMonth !== "number") {
+        return NextResponse.json(
+          { error: "Invalid data format. Users this month must be a number." },
+          { status: 400 }
+        );
+      }
+      if (usersThisMonth < 0) {
+        return NextResponse.json(
+          { error: "Users this month must be a non-negative number." },
+          { status: 400 }
+        );
+      }
+    }
+
     // Use JSONBin to store data (free external storage)
     const jsonBinUrl = process.env.JSONBIN_URL || 'https://api.jsonbin.io/v3/b/YOUR_BIN_ID';
     const jsonBinKey = process.env.JSONBIN_API_KEY;
 
     if (!jsonBinKey) {
-      // Fallback: Return success but warn about configuration
-      console.warn('JSONBin not configured. Data not persisted.');
-      
+      // Persist to data/downloads.json so homepage shows updated stats
+      try {
+        writeStatsToFile({
+          revenue,
+          usersThisMonth: usersThisMonth ?? 0,
+        });
+      } catch (err) {
+        console.error("Failed to write stats file:", err);
+        return NextResponse.json(
+          { success: false, error: "Failed to save statistics locally." },
+          { status: 500 }
+        );
+      }
       return NextResponse.json({
         success: true,
-        message: "Statistics updated (not persisted - configure JSONBin)",
-        data: { revenue, lastUpdated: new Date().toISOString() },
+        message: "Statistics updated (saved to local file)",
+        data: { revenue, usersThisMonth: usersThisMonth ?? 0, lastUpdated: new Date().toISOString() },
       });
     }
 
@@ -63,6 +90,7 @@ export async function POST(request: Request) {
     const updatedData = {
       ...existingData,
       revenue,
+      ...(usersThisMonth !== undefined && { usersThisMonth }),
       lastUpdated: new Date().toISOString(),
     };
 

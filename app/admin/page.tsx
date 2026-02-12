@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Check, ArrowLeft, IndianRupee } from "lucide-react";
+import { Check, ArrowLeft, IndianRupee, Users } from "lucide-react";
 import { toast } from "sonner";
 
 const AdminPage = () => {
@@ -10,6 +10,7 @@ const AdminPage = () => {
   // const [playStoreDownloads, setPlayStoreDownloads] = useState(0);
   // const [appStoreDownloads, setAppStoreDownloads] = useState(0);
   const [revenue, setRevenue] = useState(0);
+  const [usersThisMonth, setUsersThisMonth] = useState(0);
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,6 +28,7 @@ const AdminPage = () => {
           // setPlayStoreDownloads(data.playstore || 0);
           // setAppStoreDownloads(data.appstore || 0);
           setRevenue(data.revenue || 0);
+          setUsersThisMonth(data.usersThisMonth ?? 0);
           setLastUpdated(new Date(data.lastUpdated));
         }
       } catch (error) {
@@ -53,6 +55,7 @@ const AdminPage = () => {
           // playstore: playStoreDownloads,
           // appstore: appStoreDownloads,
           revenue,
+          usersThisMonth,
         }),
       });
 
@@ -361,6 +364,50 @@ const AdminPage = () => {
                 </div>
               </div>
 
+              {/* No. of users (this month) */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={{
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  color: 'rgba(118, 198, 255, 0.9)'
+                }}>
+                  No. of users (this month)
+                </label>
+                <input
+                  type="number"
+                  value={usersThisMonth}
+                  onChange={(e) => setUsersThisMonth(parseInt(e.target.value) || 0)}
+                  style={{
+                    height: '64px',
+                    width: '100%',
+                    borderRadius: '16px',
+                    border: '1px solid rgba(118, 198, 255, 0.2)',
+                    background: 'rgba(17, 24, 39, 0.5)',
+                    color: 'white',
+                    fontSize: '24px',
+                    fontWeight: '700',
+                    textAlign: 'center',
+                    transition: 'all 0.3s ease',
+                    backdropFilter: 'blur(10px)',
+                    outline: 'none'
+                  }}
+                  onFocus={(e) => {
+                    const target = e.target as HTMLInputElement;
+                    target.style.borderColor = '#76c6ff';
+                    target.style.boxShadow = '0 0 30px rgba(118, 198, 255, 0.3)';
+                    target.style.background = 'rgba(17, 24, 39, 0.8)';
+                  }}
+                  onBlur={(e) => {
+                    const target = e.target as HTMLInputElement;
+                    target.style.borderColor = 'rgba(118, 198, 255, 0.2)';
+                    target.style.boxShadow = 'none';
+                    target.style.background = 'rgba(17, 24, 39, 0.5)';
+                  }}
+                />
+              </div>
+
               <button
                 onClick={handleSave}
                 disabled={isSaving}
@@ -601,6 +648,60 @@ const AdminPage = () => {
                       color: 'white'
                     }}>
                       ₹{revenue.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{
+                background: 'linear-gradient(135deg, rgba(17, 24, 39, 0.8) 0%, rgba(6, 18, 30, 0.8) 100%)',
+                borderRadius: '16px',
+                border: '1px solid rgba(118, 198, 255, 0.2)',
+                padding: '24px',
+                backdropFilter: 'blur(10px)',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                const target = e.target as HTMLDivElement;
+                target.style.transform = 'translateY(-4px)';
+                target.style.boxShadow = '0 12px 40px rgba(118, 198, 255, 0.2)';
+              }}
+              onMouseLeave={(e) => {
+                const target = e.target as HTMLDivElement;
+                target.style.transform = 'translateY(0px)';
+                target.style.boxShadow = 'none';
+              }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '12px',
+                    background: 'linear-gradient(135deg, rgba(118, 198, 255, 0.2) 0%, rgba(12, 164, 255, 0.1) 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#76c6ff'
+                  }}>
+                    <Users size={24} />
+                  </div>
+                  <div style={{ textAlign: 'left' }}>
+                    <p style={{
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.1em',
+                      color: 'rgba(156, 163, 175, 0.8)',
+                      marginBottom: '4px'
+                    }}>
+                      No. of users (this month)
+                    </p>
+                    <p style={{
+                      fontSize: '28px',
+                      fontWeight: '800',
+                      color: 'white'
+                    }}>
+                      {usersThisMonth.toLocaleString()}
                     </p>
                   </div>
                 </div>

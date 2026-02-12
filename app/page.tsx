@@ -5,13 +5,12 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { IndianRupee } from "lucide-react";
 import {
-  fetchSubscriptions,
   fetchWaitlistFilled,
   fetchPlayStoreDownloads,
   fetchAppStoreDownloads,
   fetchRevenue,
+  fetchUsersThisMonth,
 } from "./utils/api";
-import { getTodaySubscriptionCount } from "./utils/subscriptionDailyCounter";
 
 // Icons using Unicode symbols (you can replace with SVG icons later)
 const PlayStoreIcon = () => (
@@ -54,7 +53,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState({
     playstoreDownloads: { current: 100000, previous: 100000 },
     appstoreDownloads: { current: 8900, previous: 8900 },
-    subscriptions: { current: 3400, previous: 3400 },
+    usersThisMonth: { current: 0, previous: 0 },
     revenue: { current: 45000, previous: 45000 },
   });
 
@@ -65,20 +64,18 @@ export default function Dashboard() {
   // Fetch all stats (used for initial load)
   const fetchAllStats = async () => {
     try {
-      // Fetch all stats in parallel
+      // Fetch all stats in parallel (usersThisMonth from same source as revenue)
       const [
-        subscriptionsCount,
+        usersThisMonth,
         playstoreDownloads,
         appstoreDownloads,
         revenue,
       ] = await Promise.all([
-        fetchSubscriptions(),
+        fetchUsersThisMonth(),
         fetchPlayStoreDownloads(),
         fetchAppStoreDownloads(),
         fetchRevenue(),
       ]);
-
-      const todaySubscriptions = getTodaySubscriptionCount(subscriptionsCount);
 
       // Update stats with new values, preserving previous for comparison
       setStats((prev) => ({
@@ -91,9 +88,9 @@ export default function Dashboard() {
           current: appstoreDownloads,
           previous: prev.appstoreDownloads.current,
         },
-        subscriptions: {
-          current: todaySubscriptions,
-          previous: prev.subscriptions.current,
+        usersThisMonth: {
+          current: usersThisMonth,
+          previous: prev.usersThisMonth.current,
         },
         revenue: {
           current: revenue,
@@ -106,22 +103,20 @@ export default function Dashboard() {
     }
   };
 
-  // Fetch all stats every 30 seconds (subscriptions, PlayStore, AppStore, revenue)
+  // Fetch all stats every 30 seconds (usersThisMonth, PlayStore, AppStore, revenue)
   const fetchAllStatsPeriodic = async () => {
     try {
       const [
-        subscriptionsCount,
+        usersThisMonth,
         playstoreDownloads,
         appstoreDownloads,
         revenue,
       ] = await Promise.all([
-        fetchSubscriptions(),
+        fetchUsersThisMonth(),
         fetchPlayStoreDownloads(),
         fetchAppStoreDownloads(),
         fetchRevenue(),
       ]);
-
-      const todaySubscriptions = getTodaySubscriptionCount(subscriptionsCount);
 
       setStats((prev) => ({
         ...prev,
@@ -133,9 +128,9 @@ export default function Dashboard() {
           current: appstoreDownloads,
           previous: prev.appstoreDownloads.current,
         },
-        subscriptions: {
-          current: todaySubscriptions,
-          previous: prev.subscriptions.current,
+        usersThisMonth: {
+          current: usersThisMonth,
+          previous: prev.usersThisMonth.current,
         },
         revenue: {
           current: revenue,
@@ -167,10 +162,19 @@ export default function Dashboard() {
       fetchAllStatsPeriodic();
     }, 30000); // 30 seconds
 
+    // Refetch when user returns to this tab (e.g. after saving on admin page)
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        fetchAllStats();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
     return () => {
       clearTimeout(initialFetch);
       clearInterval(timeInterval);
       clearInterval(statsInterval);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, []);
 
@@ -242,13 +246,14 @@ export default function Dashboard() {
                 showFullNumber={true}
               />
 
-              {/* Subscriptions - Second */}
+              {/* No. of users (this month) - Second */}
               <StatCard
-                title="Subscriptions"
-                value={stats.subscriptions.current}
-                previousValue={stats.subscriptions.previous}
+                title="No. of users (this month)"
+                value={stats.usersThisMonth.current}
+                previousValue={stats.usersThisMonth.previous}
                 icon={<SubscriptionIcon />}
                 delay={100}
+                showFullNumber={true}
               />
             </div>
 
